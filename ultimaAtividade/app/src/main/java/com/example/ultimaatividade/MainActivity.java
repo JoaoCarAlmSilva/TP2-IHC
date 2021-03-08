@@ -1,14 +1,21 @@
 package com.example.ultimaatividade;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.ultimaatividade.GPSTracker;
 
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.Manifest;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.os.Bundle;
-import android.widget.EditText;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,14 +25,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor pressure;
     private TextView lightValue;
     private TextView pressureValue;
+    private Button getGPSBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getGPSBtn = findViewById(R.id.getGPSBtn);
         lightValue = findViewById(R.id.light); // ID from component
         pressureValue = findViewById(R.id.pressure); // ID from component
+
+        ActivityCompat.requestPermissions(MainActivity.this, new
+                String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
+        getGPSBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GPSTracker g = new GPSTracker(getApplicationContext());
+                Location l = g.getLocation();
+                if(l!=null)
+                {
+                    double lat = l.getLatitude();
+                    double longi = l.getLongitude();
+                    Toast.makeText(getApplicationContext(), "LAT: "+lat + "\nLONG: " +
+                            longi, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -43,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sensorManager.registerListener((SensorEventListener) MainActivity.this, pressure, SensorManager.SENSOR_DELAY_NORMAL);
         } else
         {
-            lightValue.setText("Light sensor not supported");
+            lightValue.setText("Pressure sensor not supported");
         }
 
         Toast.makeText(this, "OnCreate", Toast.LENGTH_SHORT).show();
